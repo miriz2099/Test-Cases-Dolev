@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>תסריטי בדיקה - מערכת דולב</title>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Heebo', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f7fa;
+            color: #2d3748;
+            line-height: 1.6;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .page-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border-top: 4px solid #667eea;
+        }
+
+        .stat-card.green { border-top-color: #48bb78; }
+        .stat-card.blue { border-top-color: #4299e1; }
+        .stat-card.amber { border-top-color: #ed8936; }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin: 40px 0 25px;
+            padding-right: 15px;
+            border-right: 5px solid #667eea;
+        }
+
+        .test-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .test-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            border-right: 5px solid transparent;
+        }
+
+        .test-card.positive { border-right-color: #48bb78; }
+        .test-card.negative { border-right-color: #4299e1; }
+        .test-card.destructive { border-right-color: #f56565; }
+        .test-card.e2e { border-right-color: #9f7aea; }
+
+        .test-card:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .test-header {
+            padding: 18px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            background: linear-gradient(to left, #f7fafc, white);
+            user-select: none;
+        }
+
+        .test-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .test-header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-pass {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .badge-planned {
+            background: #feebc8;
+            color: #7b341e;
+        }
+
+        .arrow {
+            color: #a0aec0;
+            font-size: 0.9rem;
+            transition: transform 0.3s ease;
+        }
+
+        .test-card.open .arrow {
+            transform: rotate(180deg);
+        }
+
+        .test-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+
+        .test-card.open .test-body {
+            max-height: 5000px;
+        }
+
+        .test-body-content {
+            padding: 25px;
+            border-top: 1px solid #edf2f7;
+        }
+
+        .test-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .meta-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4a5568;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .meta-value {
+            font-size: 0.95rem;
+            color: #2d3748;
+            padding: 5px 12px;
+            background: #f7fafc;
+            border-radius: 6px;
+            display: inline-block;
+            width: fit-content;
+        }
+
+        .condition-section {
+            margin-bottom: 20px;
+        }
+
+        .condition-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #edf2f7;
+        }
+
+        .condition-content {
+            color: #4a5568;
+            line-height: 1.8;
+            font-size: 0.95rem;
+        }
+
+        .condition-content ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .condition-content li {
+            padding: 4px 0;
+            padding-right: 20px;
+            position: relative;
+        }
+
+        .condition-content li::before {
+            content: "▸";
+            position: absolute;
+            right: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .steps-section {
+            margin-top: 25px;
+        }
+
+        .steps-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .steps-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+        }
+
+        .steps-table thead {
+            background: #f7fafc;
+        }
+
+        .steps-table th {
+            padding: 12px 15px;
+            text-align: right;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.9rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .steps-table td {
+            padding: 14px 15px;
+            border-bottom: 1px solid #edf2f7;
+            color: #2d3748;
+            font-size: 0.95rem;
+            vertical-align: top;
+        }
+
+        .steps-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .steps-table tbody tr:hover {
+            background: #f7fafc;
+        }
+
+        .step-num {
+            background: #667eea;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 30px;
+            color: #718096;
+            font-size: 0.9rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        @media (max-width: 768px) {
+            .page-header h1 { font-size: 1.8rem; }
+            .test-header { padding: 15px; }
+            .test-body-content { padding: 15px; }
+            .steps-table { font-size: 0.85rem; }
+            .steps-table th, .steps-table td { padding: 10px 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="page-header">
+            <h1>🧪 תסריטי בדיקה - מערכת דולב</h1>
+            <p>מערכת לניהול תהליכי אבחון פסיכודידקטי | פרויקט גמר תשפ"ו</p>
+        </header>
+
+        <!-- Stats -->
+        <div class="stats-bar">
+            <div class="stat-card green">
+                <div class="stat-number">15</div>
+                <div class="stat-label">תסריטי בדיקה</div>
+            </div>
+            <div class="stat-card blue">
+                <div class="stat-number">6</div>
+                <div class="stat-label">מודולים</div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-number">13</div>
+                <div class="stat-label">בדיקות עברו ✓</div>
+            </div>
+            <div class="stat-card amber">
+                <div class="stat-number">2</div>
+                <div class="stat-label">מתוכננות לבטא</div>
+            </div>
+        </div>
+
+        <!-- מודול 1 -->
+        <h2 class="section-title">📋 ניהול משתמשים</h2>
+        <div class="test-grid">
+
+            <div class="test-card positive">
+                <div class="test-header" onclick="toggleCard(this)">
+                    <div class="test-title">1.1 הרשמת הורה חדש</div>
+                    <div class="test-header-right">
+                        <span class="badge badge-pass">PASS ✓</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                </div>
+                <div class="test-body">
+                    <div class="test-body-content">
+                        <div class="test-meta">
+                            <div class="meta-item">
+                                <span class="meta-label">Behavior</span>
+                                <span class="meta-value">Positive</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Type</span>
+                                <span class="meta-value">Functional</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Automation</span>
+                                <span class="meta-value">Manual</span>
+                            </div>
+                        </div>
+
+                        <div class="condition-section">
+                            <div class="condition-title">Pre-conditions</div>
+                            <div class="condition-content">
+                                <ul>
+                                    <li>המשתמש לא רשום במערכת</li>
+                                    <li>המערכת פועלת והתשתית זמינה</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="condition-section">
+                            <div class="condition-title">Post-conditions</div>
+                            <div class="condition-content">
+                                <ul>
+                                    <li>משתמש חדש נוצר עם סטטוס "ממתין לאישור"</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="steps-section">
+                            <div class="steps-title">Steps to reproduce</div>
+                            <table class="steps-table">
+                                <thead>
+                                    <tr>
+                                        <th width="60">Step</th>
+                                        <th width="40%">Action</th>
+                                        <th>Expected Result</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="step-num">1</span></td>
+                                        <td>כניסה לדף ההרשמה</td>
+                                        <td>טופס ההרשמה נטען בהצלחה</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="step-num">2</span></td>
+                                        <td>הזנת אימייל וסיסמה תקינים</td>
+                                        <td>השדות מקבלים את הקלט ללא הודעות שגיאה</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="step-num">3</span></td>
+                                        <td>הזנת פרטים אישיים (שם, טלפון)</td>
+                                        <td>כל השדות מקבלים את הקלט</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="step-num">4</span></td>
+                                        <td>לחיצה על "הירשם"</td>
+                                        <td>המשתמש נוצר עם סטטוס "pending"</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-card positive">
+                <div class="test-header" onclick="toggleCard(this)">
+                    <div class="test-title">1.2 אישור משתמש על ידי המנהל</div>
+                    <div class="test-header-right">
+                        <span class="badge badge-pass">PASS ✓</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                </div>
+                <div class="test-body">
+                    <div class="test-body-content">
+                        <div class="test-meta">
+                            <div class="meta-item">
+                                <span class="meta-label">Behavior</span>
+                                <span class="meta-value">Positive</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Type</span>
+                                <span class="meta-value">Functional</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Automation</span>
+                                <span class="meta-value">Manual</span>
+                            </div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Pre-conditions</div>
+                            <div class="condition-content">
+                                <ul>
+                                    <li>מנהל מחובר למערכת</li>
+                                    <li>קיים משתמש בסטטוס "pending"</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Post-conditions</div>
+                            <div class="condition-content">
+                                <ul>
+                                    <li>המשתמש מאושר ויכול להתחבר למערכת</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="steps-section">
+                            <div class="steps-title">Steps to reproduce</div>
+                            <table class="steps-table">
+                                <thead>
+                                    <tr><th width="60">Step</th><th width="40%">Action</th><th>Expected Result</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td><span class="step-num">1</span></td><td>כניסה כמנהל למסך "אישור משתמשים"</td><td>רשימת המשתמשים הממתינים מוצגת</td></tr>
+                                    <tr><td><span class="step-num">2</span></td><td>בחירת משתמש מהרשימה</td><td>פרטי המשתמש מוצגים</td></tr>
+                                    <tr><td><span class="step-num">3</span></td><td>לחיצה על "אשר"</td><td>סטטוס המשתמש משתנה ל-"מאושר"</td></tr>
+                                    <tr><td><span class="step-num">4</span></td><td>המשתמש מנסה להתחבר</td><td>ההתחברות מצליחה</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-card negative">
+                <div class="test-header" onclick="toggleCard(this)">
+                    <div class="test-title">1.3 הגנת נתיבים לפי תפקיד</div>
+                    <div class="test-header-right">
+                        <span class="badge badge-pass">PASS ✓</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                </div>
+                <div class="test-body">
+                    <div class="test-body-content">
+                        <div class="test-meta">
+                            <div class="meta-item">
+                                <span class="meta-label">Behavior</span>
+                                <span class="meta-value">Negative</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Type</span>
+                                <span class="meta-value">Functional</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Automation</span>
+                                <span class="meta-value">Manual</span>
+                            </div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Pre-conditions</div>
+                            <div class="condition-content">
+                                <ul><li>משתמש מחובר כהורה (לא כמנהל)</li></ul>
+                            </div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Post-conditions</div>
+                            <div class="condition-content">
+                                <ul><li>המשתמש לא מצליח לגשת לדפים מוגבלים</li></ul>
+                            </div>
+                        </div>
+                        <div class="steps-section">
+                            <div class="steps-title">Steps to reproduce</div>
+                            <table class="steps-table">
+                                <thead><tr><th width="60">Step</th><th width="40%">Action</th><th>Expected Result</th></tr></thead>
+                                <tbody>
+                                    <tr><td><span class="step-num">1</span></td><td>ניסיון לגשת לכתובת /admin/users</td><td>המערכת חוסמת את הגישה</td></tr>
+                                    <tr><td><span class="step-num">2</span></td><td>בדיקת הודעת השגיאה</td><td>הודעה ברורה: "אין לך הרשאה לדף זה"</td></tr>
+                                    <tr><td><span class="step-num">3</span></td><td>המשתמש מועבר לדף הבית שלו</td><td>חזרה לדף הבית של ההורה</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- מודול 2 -->
+        <h2 class="section-title">🩺 ניהול אבחונים</h2>
+        <div class="test-grid">
+            <div class="test-card positive">
+                <div class="test-header" onclick="toggleCard(this)">
+                    <div class="test-title">2.1 יצירת אבחון חדש</div>
+                    <div class="test-header-right">
+                        <span class="badge badge-pass">PASS ✓</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                </div>
+                <div class="test-body">
+                    <div class="test-body-content">
+                        <div class="test-meta">
+                            <div class="meta-item"><span class="meta-label">Behavior</span><span class="meta-value">Positive</span></div>
+                            <div class="meta-item"><span class="meta-label">Type</span><span class="meta-value">Functional</span></div>
+                            <div class="meta-item"><span class="meta-label">Automation</span><span class="meta-value">Manual</span></div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Pre-conditions</div>
+                            <div class="condition-content">
+                                <ul>
+                                    <li>מאבחנת מחוברת למערכת</li>
+                                    <li>קיים ילד במערכת המשויך למאבחנת</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Post-conditions</div>
+                            <div class="condition-content">
+                                <ul>
+                                    <li>אבחון חדש נוצר</li>
+                                    <li>טופס הסכמה נוצר אוטומטית</li>
+                                    <li>שאלון נפתח להורה</li>
+                                    <li>נשלחת הודעה אוטומטית להורה</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="steps-section">
+                            <div class="steps-title">Steps to reproduce</div>
+                            <table class="steps-table">
+                                <thead><tr><th width="60">Step</th><th width="40%">Action</th><th>Expected Result</th></tr></thead>
+                                <tbody>
+                                    <tr><td><span class="step-num">1</span></td><td>כניסה כמאבחנת לדף המטופלים</td><td>רשימת המטופלים מוצגת</td></tr>
+                                    <tr><td><span class="step-num">2</span></td><td>בחירת ילד מהרשימה</td><td>פרטי הילד מוצגים</td></tr>
+                                    <tr><td><span class="step-num">3</span></td><td>לחיצה על "פתח אבחון חדש"</td><td>חלון אישור מופיע</td></tr>
+                                    <tr><td><span class="step-num">4</span></td><td>אישור הפעולה</td><td>אבחון נוצר במסד הנתונים</td></tr>
+                                    <tr><td><span class="step-num">5</span></td><td>בדיקת התוצאות</td><td>טופס הסכמה ושאלון נוצרו אוטומטית</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-card e2e">
+                <div class="test-header" onclick="toggleCard(this)">
+                    <div class="test-title">2.2 מחזור חיים מלא של שאלון הורים</div>
+                    <div class="test-header-right">
+                        <span class="badge badge-pass">PASS ✓</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                </div>
+                <div class="test-body">
+                    <div class="test-body-content">
+                        <div class="test-meta">
+                            <div class="meta-item"><span class="meta-label">Behavior</span><span class="meta-value">Positive</span></div>
+                            <div class="meta-item"><span class="meta-label">Type</span><span class="meta-value">End-to-End</span></div>
+                            <div class="meta-item"><span class="meta-label">Automation</span><span class="meta-value">Manual</span></div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Pre-conditions</div>
+                            <div class="condition-content">
+                                <ul>
+                                    <li>אבחון פעיל קיים</li>
+                                    <li>שאלון פתוח להורה</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Post-conditions</div>
+                            <div class="condition-content">
+                                <ul><li>השאלון מולא, נשלח, וטופל על ידי המאבחנת</li></ul>
+                            </div>
+                        </div>
+                        <div class="steps-section">
+                            <div class="steps-title">Steps to reproduce</div>
+                            <table class="steps-table">
+                                <thead><tr><th width="60">Step</th><th width="40%">Action</th><th>Expected Result</th></tr></thead>
+                                <tbody>
+                                    <tr><td><span class="step-num">1</span></td><td>ההורה מתחיל למלא את השאלון</td><td>השאלון נטען עם השדות הריקים</td></tr>
+                                    <tr><td><span class="step-num">2</span></td><td>ההורה ממלא חלק מהשדות</td><td>הנתונים נשמרים כטיוטה אוטומטית</td></tr>
+                                    <tr><td><span class="step-num">3</span></td><td>ההורה מתנתק מהמערכת</td><td>הטיוטה נשמרת בהצלחה</td></tr>
+                                    <tr><td><span class="step-num">4</span></td><td>ההורה מתחבר מחדש</td><td>השאלון נטען עם הנתונים שמולאו</td></tr>
+                                    <tr><td><span class="step-num">5</span></td><td>ההורה משלים ומגיש סופית</td><td>השאלון ננעל ולא ניתן לעריכה</td></tr>
+                                    <tr><td><span class="step-num">6</span></td><td>המאבחנת צופה בתשובות</td><td>כל התשובות מוצגות</td></tr>
+                                    <tr><td><span class="step-num">7</span></td><td>המאבחנת מחזירה לתיקון</td><td>השאלון נפתח מחדש להורה</td></tr>
+                                    <tr><td><span class="step-num">8</span></td><td>ההורה מבצע תיקון ושולח שוב</td><td>השאלון מתעדכן ומקבל סטטוס חדש</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- מודול 3 -->
+        <h2 class="section-title">🏫 שאלון בית הספר</h2>
+        <div class="test-grid">
+            <div class="test-card positive">
+                <div class="test-header" onclick="toggleCard(this)">
+                    <div class="test-title">3.1 שליחת קישור למורה</div>
+                    <div class="test-header-right">
+                        <span class="badge badge-pass">PASS ✓</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                </div>
+                <div class="test-body">
+                    <div class="test-body-content">
+                        <div class="test-meta">
+                            <div class="meta-item"><span class="meta-label">Behavior</span><span class="meta-value">Positive</span></div>
+                            <div class="meta-item"><span class="meta-label">Type</span><span class="meta-value">Functional</span></div>
+                            <div class="meta-item"><span class="meta-label">Automation</span><span class="meta-value">Manual</span></div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Pre-conditions</div>
+                            <div class="condition-content">
+                                <ul>
+                                    <li>ההורה מחובר למערכת</li>
+                                    <li>ההורה הזין שם ומייל של המורה</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Post-conditions</div>
+                            <div class="condition-content">
+                                <ul>
+                                    <li>מייל נשלח למורה</li>
+                                    <li>טוקן ייחודי נוצר במסד הנתונים</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="steps-section">
+                            <div class="steps-title">Steps to reproduce</div>
+                            <table class="steps-table">
+                                <thead><tr><th width="60">Step</th><th width="40%">Action</th><th>Expected Result</th></tr></thead>
+                                <tbody>
+                                    <tr><td><span class="step-num">1</span></td><td>ההורה לוחץ "שלח קישור למורה"</td><td>חלון אישור מופיע</td></tr>
+                                    <tr><td><span class="step-num">2</span></td><td>אישור השליחה</td><td>המערכת מציגה הודעת הצלחה</td></tr>
+                                    <tr><td><span class="step-num">3</span></td><td>בדיקת תיבת המייל של המורה</td><td>מייל התקבל עם לינק</td></tr>
+                                    <tr><td><span class="step-num">4</span></td><td>בדיקת מסד הנתונים</td><td>טוקן ייחודי נשמר עם תוקף 7 ימים</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-card positive">
+                <div class="test-header" onclick="toggleCard(this)">
+                    <div class="test-title">3.2 גישה ציבורית של מורה דרך לינק</div>
+                    <div class="test-header-right">
+                        <span class="badge badge-pass">PASS ✓</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                </div>
+                <div class="test-body">
+                    <div class="test-body-content">
+                        <div class="test-meta">
+                            <div class="meta-item"><span class="meta-label">Behavior</span><span class="meta-value">Positive</span></div>
+                            <div class="meta-item"><span class="meta-label">Type</span><span class="meta-value">Public Access</span></div>
+                            <div class="meta-item"><span class="meta-label">Automation</span><span class="meta-value">Manual</span></div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Pre-conditions</div>
+                            <div class="condition-content">
+                                <ul>
+                                    <li>המורה קיבל מייל עם לינק</li>
+                                    <li>הטוקן בתוקף</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Post-conditions</div>
+                            <div class="condition-content">
+                                <ul>
+                                    <li>השאלון נשמר במסד הנתונים</li>
+                                    <li>הלינק ננעל</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="steps-section">
+                            <div class="steps-title">Steps to reproduce</div>
+                            <table class="steps-table">
+                                <thead><tr><th width="60">Step</th><th width="40%">Action</th><th>Expected Result</th></tr></thead>
+                                <tbody>
+                                    <tr><td><span class="step-num">1</span></td><td>המורה לוחץ על הלינק במייל</td><td>הדף הציבורי נטען ללא צורך בהתחברות</td></tr>
+                                    <tr><td><span class="step-num">2</span></td><td>המורה ממלא את השאלון</td><td>הנתונים נשמרים כטיוטה</td></tr>
+                                    <tr><td><span class="step-num">3</span></td><td>המורה מגיש סופית</td><td>השאלון נשמר ב-Firestore</td></tr>
+                                    <tr><td><span class="step-num">4</span></td><td>המורה מנסה לגשת שוב</td><td>הודעה: "השאלון כבר הוגש"</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-card negative">
+                <div class="test-header" onclick="toggleCard(this)">
+                    <div class="test-title">3.3 ניסיון להשתמש בטוקן שפג תוקפו</div>
+                    <div class="test-header-right">
+                        <span class="badge badge-planned">PLANNED FOR BETA</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                </div>
+                <div class="test-body">
+                    <div class="test-body-content">
+                        <div class="test-meta">
+                            <div class="meta-item"><span class="meta-label">Behavior</span><span class="meta-value">Negative</span></div>
+                            <div class="meta-item"><span class="meta-label">Type</span><span class="meta-value">Security</span></div>
+                            <div class="meta-item"><span class="meta-label">Automation</span><span class="meta-value">Manual</span></div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Pre-conditions</div>
+                            <div class="condition-content">
+                                <ul><li>קיים טוקן שעבר 7 ימים מאז יצירתו</li></ul>
+                            </div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Post-conditions</div>
+                            <div class="condition-content">
+                                <ul><li>אין גישה לטופס</li></ul>
+                            </div>
+                        </div>
+                        <div class="steps-section">
+                            <div class="steps-title">Steps to reproduce</div>
+                            <table class="steps-table">
+                                <thead><tr><th width="60">Step</th><th width="40%">Action</th><th>Expected Result</th></tr></thead>
+                                <tbody>
+                                    <tr><td><span class="step-num">1</span></td><td>ניסיון לגשת לקישור</td><td>המערכת בודקת את התוקף</td></tr>
+                                    <tr><td><span class="step-num">2</span></td><td>בדיקת התגובה</td><td>הודעת שגיאה: "הקישור פג תוקף"</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- מודול 4 -->
+        <h2 class="section-title">✍️ טופס הסכמה דיגיטלי</h2>
+        <div class="test-grid">
+            <div class="test-card positive">
+                <div class="test-header" onclick="toggleCard(this)">
+                    <div class="test-title">4.1 חתימת ההורה הרשום</div>
+                    <div class="test-header-right">
+                        <span class="badge badge-pass">PASS ✓</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                </div>
+                <div class="test-body">
+                    <div class="test-body-content">
+                        <div class="test-meta">
+                            <div class="meta-item"><span class="meta-label">Behavior</span><span class="meta-value">Positive</span></div>
+                            <div class="meta-item"><span class="meta-label">Type</span><span class="meta-value">Functional</span></div>
+                            <div class="meta-item"><span class="meta-label">Automation</span><span class="meta-value">Manual</span></div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Pre-conditions</div>
+                            <div class="condition-content">
+                                <ul>
+                                    <li>קיים טופס הסכמה פתוח לחתימה</li>
+                                    <li>ההורה הרשום מחובר</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Post-conditions</div>
+                            <div class="condition-content">
+                                <ul>
+                                    <li>החתימה נשמרת עם חותמת זמן</li>
+                                    <li>סטטוס הטופס משתנה ל-"חתום חלקית"</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="steps-section">
+                            <div class="steps-title">Steps to reproduce</div>
+                            <table class="steps-table">
+                                <thead><tr><th width="60">Step</th><th width="40%">Action</th><th>Expected Result</th></tr></thead>
+                                <tbody>
+                                    <tr><td><span class="step-num">1</span></td><td>ההורה נכנס לדף הטופס</td><td>הטופס מוצג עם פרטי הילד</td></tr>
+                                    <tr><td><span class="step-num">2</span></td><td>ההורה קורא את ההסכמה</td><td>התוכן מוצג בעברית בכיוון RTL</td></tr>
+                                    <tr><td><span class="step-num">3</span></td><td>ההורה מסמן את תיבת האישור</td><td>הסימון נשמר</td></tr>
+                                    <tr><td><span class="step-num">4</span></td><td>ההורה מקליד שם מלא</td><td>החתימה מוצגת</td></tr>
+                                    <tr><td><span class="step-num">5</span></td><td>ההורה לוחץ "חתום וסיים"</td><td>החתימה נשמרת + הודעת הצלחה</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-card positive">
+                <div class="test-header" onclick="toggleCard(this)">
+                    <div class="test-title">4.2 שליחת קישור להורה שני (גירושין)</div>
+                    <div class="test-header-right">
+                        <span class="badge badge-pass">PASS ✓</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                </div>
+                <div class="test-body">
+                    <div class="test-body-content">
+                        <div class="test-meta">
+                            <div class="meta-item"><span class="meta-label">Behavior</span><span class="meta-value">Positive</span></div>
+                            <div class="meta-item"><span class="meta-label">Type</span><span class="meta-value">Functional</span></div>
+                            <div class="meta-item"><span class="meta-label">Automation</span><span class="meta-value">Manual</span></div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Pre-conditions</div>
+                            <div class="condition-content">
+                                <ul><li>ההורה הרשום כבר חתם על הטופס</li></ul>
+                            </div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Post-conditions</div>
+                            <div class="condition-content">
+                                <ul>
+                                    <li>מייל נשלח להורה השני</li>
+                                    <li>טוקן ייחודי נוצר</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="steps-section">
+                            <div class="steps-title">Steps to reproduce</div>
+                            <table class="steps-table">
+                                <thead><tr><th width="60">Step</th><th width="40%">Action</th><th>Expected Result</th></tr></thead>
+                                <tbody>
+                                    <tr><td><span class="step-num">1</span></td><td>ההורה לוחץ "שלח להורה השני"</td><td>מודאל נפתח</td></tr>
+                                    <tr><td><span class="step-num">2</span></td><td>הזנת שם ומייל של ההורה השני</td><td>הולידציה עוברת בהצלחה</td></tr>
+                                    <tr><td><span class="step-num">3</span></td><td>לחיצה על "שלח"</td><td>מייל נשלח ל-Gmail</td></tr>
+                                    <tr><td><span class="step-num">4</span></td><td>בדיקת סטטוס הטופס</td><td>סטטוס: "ממתין להורה שני"</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-card positive">
+                <div class="test-header" onclick="toggleCard(this)">
+                    <div class="test-title">4.3 חתימת ההורה השני דרך לינק</div>
+                    <div class="test-header-right">
+                        <span class="badge badge-pass">PASS ✓</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                </div>
+                <div class="test-body">
+                    <div class="test-body-content">
+                        <div class="test-meta">
+                            <div class="meta-item"><span class="meta-label">Behavior</span><span class="meta-value">Positive</span></div>
+                            <div class="meta-item"><span class="meta-label">Type</span><span class="meta-value">Public Access</span></div>
+                            <div class="meta-item"><span class="meta-label">Automation</span><span class="meta-value">Manual</span></div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Pre-conditions</div>
+                            <div class="condition-content">
+                                <ul><li>ההורה השני קיבל לינק במייל</li></ul>
+                            </div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Post-conditions</div>
+                            <div class="condition-content">
+                                <ul>
+                                    <li>הטופס נחתם במלואו</li>
+                                    <li>הודעה אוטומטית נשלחת למאבחנת</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="steps-section">
+                            <div class="steps-title">Steps to reproduce</div>
+                            <table class="steps-table">
+                                <thead><tr><th width="60">Step</th><th width="40%">Action</th><th>Expected Result</th></tr></thead>
+                                <tbody>
+                                    <tr><td><span class="step-num">1</span></td><td>ההורה השני לוחץ על הלינק</td><td>הדף הציבורי נטען</td></tr>
+                                    <tr><td><span class="step-num">2</span></td><td>בדיקת פרטי הילד</td><td>פרטי הילד מוצגים נכון</td></tr>
+                                    <tr><td><span class="step-num">3</span></td><td>ההורה השני חותם</td><td>החתימה נשמרת</td></tr>
+                                    <tr><td><span class="step-num">4</span></td><td>בדיקת סטטוס הטופס</td><td>סטטוס: "חתום במלואו"</td></tr>
+                                    <tr><td><span class="step-num">5</span></td><td>בדיקת תיבת המסרים של המאבחנת</td><td>התקבלה הודעה אוטומטית</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- מודול 5 -->
+        <h2 class="section-title">💬 מערכת תקשורת</h2>
+        <div class="test-grid">
+            <div class="test-card e2e">
+                <div class="test-header" onclick="toggleCard(this)">
+                    <div class="test-title">5.1 שליחת הודעה דו-כיוונית</div>
+                    <div class="test-header-right">
+                        <span class="badge badge-pass">PASS ✓</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                </div>
+                <div class="test-body">
+                    <div class="test-body-content">
+                        <div class="test-meta">
+                            <div class="meta-item"><span class="meta-label">Behavior</span><span class="meta-value">Positive</span></div>
+                            <div class="meta-item"><span class="meta-label">Type</span><span class="meta-value">End-to-End</span></div>
+                            <div class="meta-item"><span class="meta-label">Automation</span><span class="meta-value">Manual</span></div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Pre-conditions</div>
+                            <div class="condition-content">
+                                <ul><li>קיים ילד פעיל המשויך להורה ולמאבחנת</li></ul>
+                            </div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Post-conditions</div>
+                            <div class="condition-content">
+                                <ul>
+                                    <li>ההודעות מקושרות לילד הספציפי</li>
+                                    <li>ההודעות ממוינות לפי תאריך</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="steps-section">
+                            <div class="steps-title">Steps to reproduce</div>
+                            <table class="steps-table">
+                                <thead><tr><th width="60">Step</th><th width="40%">Action</th><th>Expected Result</th></tr></thead>
+                                <tbody>
+                                    <tr><td><span class="step-num">1</span></td><td>ההורה שולח הודעה דרך דף הילד</td><td>ההודעה נשמרת ומוצגת</td></tr>
+                                    <tr><td><span class="step-num">2</span></td><td>המאבחנת רואה את ההודעה בתיבת הדואר</td><td>ההודעה מופיעה עם מונה "1 חדשה"</td></tr>
+                                    <tr><td><span class="step-num">3</span></td><td>המאבחנת פותחת את השיחה</td><td>ההודעה מסומנת כ"נקראה"</td></tr>
+                                    <tr><td><span class="step-num">4</span></td><td>המאבחנת עונה להודעה</td><td>התשובה נשלחת בהצלחה</td></tr>
+                                    <tr><td><span class="step-num">5</span></td><td>ההורה רואה את התשובה</td><td>התשובה מוצגת בכרונולוגיה הנכונה</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-card positive">
+                <div class="test-header" onclick="toggleCard(this)">
+                    <div class="test-title">5.2 סימון הודעות כנקראו</div>
+                    <div class="test-header-right">
+                        <span class="badge badge-pass">PASS ✓</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                </div>
+                <div class="test-body">
+                    <div class="test-body-content">
+                        <div class="test-meta">
+                            <div class="meta-item"><span class="meta-label">Behavior</span><span class="meta-value">Positive</span></div>
+                            <div class="meta-item"><span class="meta-label">Type</span><span class="meta-value">Functional</span></div>
+                            <div class="meta-item"><span class="meta-label">Automation</span><span class="meta-value">Manual</span></div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Pre-conditions</div>
+                            <div class="condition-content">
+                                <ul><li>קיימות הודעות שלא נקראו</li></ul>
+                            </div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Post-conditions</div>
+                            <div class="condition-content">
+                                <ul>
+                                    <li>כל ההודעות מסומנות כנקראו</li>
+                                    <li>המונה בתיבת הדואר מתעדכן</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="steps-section">
+                            <div class="steps-title">Steps to reproduce</div>
+                            <table class="steps-table">
+                                <thead><tr><th width="60">Step</th><th width="40%">Action</th><th>Expected Result</th></tr></thead>
+                                <tbody>
+                                    <tr><td><span class="step-num">1</span></td><td>בדיקת מונה ההודעות הלא נקראות</td><td>מונה מציג: "3 חדשות"</td></tr>
+                                    <tr><td><span class="step-num">2</span></td><td>המשתמש נכנס לשיחה</td><td>batch update מעדכן את כל ההודעות</td></tr>
+                                    <tr><td><span class="step-num">3</span></td><td>בדיקת המונה לאחר היציאה</td><td>מונה מציג: "0"</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- מודול 6 -->
+        <h2 class="section-title">📅 יומן עבודה</h2>
+        <div class="test-grid">
+            <div class="test-card positive">
+                <div class="test-header" onclick="toggleCard(this)">
+                    <div class="test-title">6.1 יצירת פגישת אבחון</div>
+                    <div class="test-header-right">
+                        <span class="badge badge-pass">PASS ✓</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                </div>
+                <div class="test-body">
+                    <div class="test-body-content">
+                        <div class="test-meta">
+                            <div class="meta-item"><span class="meta-label">Behavior</span><span class="meta-value">Positive</span></div>
+                            <div class="meta-item"><span class="meta-label">Type</span><span class="meta-value">Functional</span></div>
+                            <div class="meta-item"><span class="meta-label">Automation</span><span class="meta-value">Manual</span></div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Pre-conditions</div>
+                            <div class="condition-content">
+                                <ul>
+                                    <li>המאבחנת מחוברת</li>
+                                    <li>יש לה מטופלים במערכת</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Post-conditions</div>
+                            <div class="condition-content">
+                                <ul>
+                                    <li>האירוע נשמר ביומן</li>
+                                    <li>האירוע מקושר לילד הנכון</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="steps-section">
+                            <div class="steps-title">Steps to reproduce</div>
+                            <table class="steps-table">
+                                <thead><tr><th width="60">Step</th><th width="40%">Action</th><th>Expected Result</th></tr></thead>
+                                <tbody>
+                                    <tr><td><span class="step-num">1</span></td><td>כניסה ליומן</td><td>FullCalendar נטען עם תאריכים עבריים</td></tr>
+                                    <tr><td><span class="step-num">2</span></td><td>בחירת תאריך וזמן פנויים</td><td>טופס יצירת אירוע נפתח</td></tr>
+                                    <tr><td><span class="step-num">3</span></td><td>בחירת סוג: "פגישת אבחון"</td><td>שדה "בחר ילד" מופיע</td></tr>
+                                    <tr><td><span class="step-num">4</span></td><td>בחירת ילד מהרשימה</td><td>רק ילדים של המאבחנת מוצגים</td></tr>
+                                    <tr><td><span class="step-num">5</span></td><td>שמירה</td><td>האירוע מופיע ביומן</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-card negative">
+                <div class="test-header" onclick="toggleCard(this)">
+                    <div class="test-title">6.2 זיהוי קונפליקט בלוח הזמנים</div>
+                    <div class="test-header-right">
+                        <span class="badge badge-pass">PASS ✓</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                </div>
+                <div class="test-body">
+                    <div class="test-body-content">
+                        <div class="test-meta">
+                            <div class="meta-item"><span class="meta-label">Behavior</span><span class="meta-value">Negative</span></div>
+                            <div class="meta-item"><span class="meta-label">Type</span><span class="meta-value">Functional</span></div>
+                            <div class="meta-item"><span class="meta-label">Automation</span><span class="meta-value">Manual</span></div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Pre-conditions</div>
+                            <div class="condition-content">
+                                <ul><li>קיימת פגישה ב-10:00-11:00</li></ul>
+                            </div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Post-conditions</div>
+                            <div class="condition-content">
+                                <ul><li>המערכת חוסמת אירועים חופפים</li></ul>
+                            </div>
+                        </div>
+                        <div class="steps-section">
+                            <div class="steps-title">Steps to reproduce</div>
+                            <table class="steps-table">
+                                <thead><tr><th width="60">Step</th><th width="40%">Action</th><th>Expected Result</th></tr></thead>
+                                <tbody>
+                                    <tr><td><span class="step-num">1</span></td><td>ניסיון ליצור פגישה ב-10:30</td><td>המערכת מזהה קונפליקט</td></tr>
+                                    <tr><td><span class="step-num">2</span></td><td>בדיקת הודעת השגיאה</td><td>"קיים אירוע בשעות אלו"</td></tr>
+                                    <tr><td><span class="step-num">3</span></td><td>בדיקה שהאירוע החדש לא נשמר</td><td>האירוע לא קיים בלוח</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-card positive">
+                <div class="test-header" onclick="toggleCard(this)">
+                    <div class="test-title">6.3 יצירת סדרה חוזרת של זמינויות</div>
+                    <div class="test-header-right">
+                        <span class="badge badge-pass">PASS ✓</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                </div>
+                <div class="test-body">
+                    <div class="test-body-content">
+                        <div class="test-meta">
+                            <div class="meta-item"><span class="meta-label">Behavior</span><span class="meta-value">Positive</span></div>
+                            <div class="meta-item"><span class="meta-label">Type</span><span class="meta-value">Functional</span></div>
+                            <div class="meta-item"><span class="meta-label">Automation</span><span class="meta-value">Manual</span></div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Pre-conditions</div>
+                            <div class="condition-content">
+                                <ul><li>המאבחנת מחוברת</li></ul>
+                            </div>
+                        </div>
+                        <div class="condition-section">
+                            <div class="condition-title">Post-conditions</div>
+                            <div class="condition-content">
+                                <ul>
+                                    <li>8 אירועים נוצרים בו-זמנית</li>
+                                    <li>כולם מחוברים לאותו recurrenceGroupId</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="steps-section">
+                            <div class="steps-title">Steps to reproduce</div>
+                            <table class="steps-table">
+                                <thead><tr><th width="60">Step</th><th width="40%">Action</th><th>Expected Result</th></tr></thead>
+                                <tbody>
+                                    <tr><td><span class="step-num">1</span></td><td>יצירת אירוע מסוג "זמינות"</td><td>טופס נפתח</td></tr>
+                                    <tr><td><span class="step-num">2</span></td><td>סימון "סדרה שבועית"</td><td>אפשרות 8 שבועות מופיעה</td></tr>
+                                    <tr><td><span class="step-num">3</span></td><td>שמירה</td><td>batch transaction מתבצע</td></tr>
+                                    <tr><td><span class="step-num">4</span></td><td>בדיקת הלוח</td><td>8 אירועים מופיעים ב-8 שבועות הקרובים</td></tr>
+                                    <tr><td><span class="step-num">5</span></td><td>בדיקת מסד הנתונים</td><td>כל האירועים מקבלים אותו ID</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p><strong>צוות הפיתוח</strong> | פרויקט גמר תשפ"ו | המחלקה להנדסת תוכנה, מכללת עזריאלי</p>
+        </footer>
+    </div>
+
+    <script>
+        function toggleCard(header) {
+            const card = header.parentElement;
+            card.classList.toggle('open');
+        }
+    </script>
+</body>
+</html>
